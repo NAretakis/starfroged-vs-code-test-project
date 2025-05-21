@@ -1,0 +1,14 @@
+{
+  "name": "ironsworn-character-generator",
+  "version": "1.0.0",
+  "description": "A simple Ironsworn TTRPG character generator",
+  "source": "index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "devDependencies": {
+    "parcel": "^2.9.3",
+    "typescript": "^5.1.6"
+  }
+}
