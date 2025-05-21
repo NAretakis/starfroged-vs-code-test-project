@@ -207,11 +207,35 @@ body.ds-base {
     margin-top: 5px;
 }
 
-.momentum-track {
+.momentum-container,
+.health-container,
+.spirit-container,
+.supply-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 auto;
+    width: fit-content;
+}
+
+.vertical-text {
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    text-align: center;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.momentum-track,
+#health,
+#spirit,
+#supply {
     flex-direction: column;
     width: fit-content;
-    margin: 10px auto;
+    margin: 0;
     align-items: center;
+    gap: 8px;
 }
 
 .condition-left .momentum-track {
@@ -303,6 +327,13 @@ body.ds-base {
     background-color: var(--color-surface-light);
     margin-bottom: 20px;
     flex: 1;
+}
+
+#assets-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
 .progress-track {
@@ -528,6 +559,19 @@ body.ds-base {
         flex-wrap: wrap;
     }
     
+    .momentum-container,
+    .health-container,
+    .spirit-container,
+    .supply-container {
+        flex-direction: column;
+    }
+    
+    .vertical-text {
+        writing-mode: horizontal-tb;
+        transform: none;
+        margin-bottom: 8px;
+    }
+    
     .condition-center {
         max-height: none;
         overflow-y: visible;
@@ -538,6 +582,10 @@ body.ds-base {
     }
     
     .asset-selection {
+        grid-template-columns: 1fr;
+    }
+
+    #assets-list {
         grid-template-columns: 1fr;
     }
 }

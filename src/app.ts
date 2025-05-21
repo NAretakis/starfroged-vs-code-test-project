@@ -122,18 +122,19 @@ function updateAssetsList(assets: Asset[]) {
     assetsListEl.innerHTML = '';
     assets.forEach(asset => {
         const li = document.createElement('li');
-        li.className = 'asset-item ds-u-padding--2';
+        li.className = 'asset-card';
         li.innerHTML = `
-            <h4 class="ds-h4">${asset.name}</h4>
-            <p>${asset.description}</p>
-            <ul class="ds-c-list">
+            <div class="asset-header">${asset.name}</div>
+            <div class="asset-description">${asset.description}</div>
+            <div class="asset-abilities">
                 ${asset.abilities.map((ability, index) => `
-                    <li>
-                        <input type="checkbox" ${asset.checked[index] ? 'checked' : ''}>
-                        ${ability}
-                    </li>
+                    <div class="ability-container">
+                        <input type="checkbox" id="${asset.name}-ability-${index}" 
+                            ${asset.checked[index] ? 'checked' : ''}>
+                        <label for="${asset.name}-ability-${index}">${ability}</label>
+                    </div>
                 `).join('')}
-            </ul>
+            </div>
         `;
         assetsListEl.appendChild(li);
     });
@@ -199,25 +200,52 @@ function populateAssetModal() {
 
     assetOptions.forEach(asset => {
         const li = document.createElement('li');
-        li.className = 'asset-item ds-u-padding--2';
+        li.className = 'asset-card selectable';
         li.innerHTML = `
-            <h4 class="ds-h4">${asset.name}</h4>
-            <p>${asset.description}</p>
+            <div class="asset-header">${asset.name}</div>
+            <div class="asset-description">${asset.description}</div>
+            <div class="asset-abilities">
+                ${asset.abilities.map(ability => `
+                    <div class="ability-container">
+                        <label>${ability}</label>
+                    </div>
+                `).join('')}
+            </div>
         `;
-        li.addEventListener('click', () => {
-            if (selectedAssetNames.has(asset.name)) {
-                selectedAssetNames.delete(asset.name);
-                li.classList.remove('selected');
-            } else {
-                selectedAssetNames.add(asset.name);
-                li.classList.add('selected');
-            }
-        });
 
         if (selectedAssetNames.has(asset.name)) {
             li.classList.add('selected');
-            selectedAssetsList.appendChild(li.cloneNode(true));
+            const selectedLi = li.cloneNode(true) as HTMLElement;
+            selectedLi.addEventListener('click', () => {
+                selectedAssetNames.delete(asset.name);
+                selectedLi.remove();
+                li.classList.remove('selected');
+            });
+            selectedAssetsList.appendChild(selectedLi);
         } else {
+            li.addEventListener('click', () => {
+                if (selectedAssetNames.has(asset.name)) {
+                    selectedAssetNames.delete(asset.name);
+                    li.classList.remove('selected');
+                    // Remove from selected list
+                    const selectedItem = Array.from(selectedAssetsList.children)
+                        .find(el => el.querySelector('.asset-header')?.textContent === asset.name);
+                    if (selectedItem) {
+                        selectedItem.remove();
+                    }
+                } else {
+                    selectedAssetNames.add(asset.name);
+                    li.classList.add('selected');
+                    // Add to selected list
+                    const selectedLi = li.cloneNode(true) as HTMLElement;
+                    selectedLi.addEventListener('click', () => {
+                        selectedAssetNames.delete(asset.name);
+                        selectedLi.remove();
+                        li.classList.remove('selected');
+                    });
+                    selectedAssetsList.appendChild(selectedLi);
+                }
+            });
             availableAssetsList.appendChild(li);
         }
     });
@@ -250,9 +278,17 @@ saveAssetsBtn.addEventListener('click', () => {
     if (!currentCharacter) return;
     
     const selectedAssets = Array.from(selectedAssetsList.children).map(li => {
-        const assetName = li.querySelector('.ds-h4')?.textContent || '';
-        return assetOptions.find(a => a.name === assetName)!;
-    });
+        const assetName = li.querySelector('.asset-header')?.textContent || '';
+        const asset = assetOptions.find(a => a.name === assetName);
+        if (asset) {
+            // Create a new asset object with default checked states
+            return {
+                ...asset,
+                checked: new Array(asset.abilities.length).fill(false)
+            };
+        }
+        return null;
+    }).filter((asset): asset is Asset => asset !== null);
 
     currentCharacter.assets = selectedAssets;
     updateAssetsList(selectedAssets);
