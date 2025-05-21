@@ -4,167 +4,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ironsworn Character Generator</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="node_modules/@cmsgov/design-system/dist/css/index.css">
     <link rel="stylesheet" href="src/styles.css">
 </head>
-<body>
-    <div class="container">
-        <h1>Ironsworn Character Generator</h1>
+<body class="ds-base">
+    <div class="ds-l-container">
+        <h1 class="ds-h1">Ironsworn Character Generator</h1>
         
-        <div class="character-sheet">
-            <div class="character-header">
+        <div class="controls ds-u-text-align--center ds-u-margin-bottom--3">
+            <button id="generate-btn" class="ds-c-button ds-c-button--big ds-c-button--primary">Generate New Character</button>
+        </div>
+        
+        <div class="character-sheet ds-u-padding--3 ds-u-margin-bottom--3">
+            <div class="character-header ds-u-padding-bottom--2 ds-u-margin-bottom--2">
                 <div class="name-section">
-                    <h2>Name:</h2>
-                    <input type="text" id="character-name" class="editable-field" placeholder="Character Name">
+                    <div>
+                        <h2 class="ds-h2">Name:</h2>
+                        <input type="text" id="character-name" class="ds-c-field" placeholder="Character Name">
+                    </div>
+                    <div>
+                        <h2 class="ds-h2">Background</h2>
+                        <textarea id="background" class="ds-c-field" rows="4" placeholder="Character background..."></textarea>
+                    </div>
                 </div>
             </div>
             
-            <div class="stats-section">
-                <h3>Stats</h3>
+            <div class="stats-section ds-u-margin-bottom--3">
+                <h3 class="ds-h3">Stats</h3>
                 <div class="stats-grid">
-                    <div class="stat-box">
+                    <div class="stat-box ds-u-padding--2">
                         <div class="stat-label">Edge</div>
-                        <input type="number" id="edge" class="stat-value editable-stat" value="0">
+                        <input type="number" id="edge" class="ds-c-field stat-value" value="0">
                     </div>
-                    <div class="stat-box">
+                    <div class="stat-box ds-u-padding--2">
                         <div class="stat-label">Heart</div>
-                        <input type="number" id="heart" class="stat-value editable-stat" value="0">
+                        <input type="number" id="heart" class="ds-c-field stat-value" value="0">
                     </div>
-                    <div class="stat-box">
+                    <div class="stat-box ds-u-padding--2">
                         <div class="stat-label">Iron</div>
-                        <input type="number" id="iron" class="stat-value editable-stat" value="0">
+                        <input type="number" id="iron" class="ds-c-field stat-value" value="0">
                     </div>
-                    <div class="stat-box">
+                    <div class="stat-box ds-u-padding--2">
                         <div class="stat-label">Shadow</div>
-                        <input type="number" id="shadow" class="stat-value editable-stat" value="0">
+                        <input type="number" id="shadow" class="ds-c-field stat-value" value="0">
                     </div>
-                    <div class="stat-box">
+                    <div class="stat-box ds-u-padding--2">
                         <div class="stat-label">Wits</div>
-                        <input type="number" id="wits" class="stat-value editable-stat" value="0">
+                        <input type="number" id="wits" class="ds-c-field stat-value" value="0">
                     </div>
                 </div>
             </div>
             
-            <div class="condition-section">
-                <h3>Condition</h3>
+            <div class="condition-section ds-u-margin-bottom--3">
+
                 <div class="condition-grid">
-                    <div class="condition-meter">
-                        <div class="condition-label">Health</div>
-                        <div id="health" class="checkbox-track">
-                            <!-- Checkboxes will be added by JavaScript -->
+                    <div class="condition-left">
+                        <div class="condition-meter ds-u-padding--2">
+                            <div class="condition-label">Momentum</div>
+                            <div id="momentum" class="checkbox-track momentum-track">
+                                <!-- Checkboxes will be added by JavaScript -->
+                            </div>
                         </div>
                     </div>
-                    <div class="condition-meter">
-                        <div class="condition-label">Spirit</div>
-                        <div id="spirit" class="checkbox-track">
-                            <!-- Checkboxes will be added by JavaScript -->
+                    
+                    <div class="condition-center">
+                        <div class="bonds-section ds-u-padding--2">
+                            <h3 class="ds-h3">Bonds</h3>
+                            <div id="bonds-container">
+                                <!-- Bonds will be populated here -->
+                            </div>
+                            <button id="add-bond-btn" class="ds-c-button ds-c-button--primary">Add Bond</button>
+                        </div>
+                        
+                        <div class="vows-section ds-u-padding--2">
+                            <h3 class="ds-h3">Vows</h3>
+                            <div id="vows-container">
+                                <!-- Vows will be populated here -->
+                            </div>
+                            <button id="add-vow-btn" class="ds-c-button ds-c-button--primary">Add Vow</button>
+                        </div>
+                        
+                        <div class="assets-section ds-u-padding--2">
+                            <h3 class="ds-h3">Assets</h3>
+                            <ul id="assets-list" class="ds-c-list--bare">
+                                <!-- Assets will be populated here -->
+                            </ul>
+                            <button id="manage-assets-btn" class="ds-c-button ds-c-button--primary">Manage Assets</button>
                         </div>
                     </div>
-                    <div class="condition-meter">
-                        <div class="condition-label">Supply</div>
-                        <div id="supply" class="checkbox-track">
-                            <!-- Checkboxes will be added by JavaScript -->
+                    
+                    <div class="condition-right">
+                        <div class="condition-meter ds-u-padding--2">
+                            <div class="condition-label">Health</div>
+                            <div id="health" class="checkbox-track">
+                                <!-- Checkboxes will be added by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="condition-meter ds-u-padding--2">
+                            <div class="condition-label">Spirit</div>
+                            <div id="spirit" class="checkbox-track">
+                                <!-- Checkboxes will be added by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="condition-meter ds-u-padding--2">
+                            <div class="condition-label">Supply</div>
+                            <div id="supply" class="checkbox-track">
+                                <!-- Checkboxes will be added by JavaScript -->
+                            </div>
                         </div>
                     </div>
-                    <div class="condition-meter">
-                        <div class="condition-label">Momentum</div>
-                        <div id="momentum" class="checkbox-track momentum-track">
-                            <!-- Checkboxes will be added by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="details-section">
-                <div class="detail-item">
-                    <h3>Background</h3>
-                    <textarea id="background" class="editable-textarea" rows="4" placeholder="Character background..."></textarea>
-                </div>
-                <div class="detail-item">
-                    <h3>Assets</h3>
-                    <ul id="assets-list">
-                        <!-- Assets will be populated here -->
-                    </ul>
-                    <button id="manage-assets-btn" class="btn btn-small">Manage Assets</button>
-                </div>
-            </div>
-            
-            <div class="progress-tracks">
-                <div class="bonds-section">
-                    <h3>Bonds</h3>
-                    <div id="bonds-container">
-                        <!-- Bonds will be populated here -->
-                    </div>
-                    <button id="add-bond-btn" class="btn btn-small">Add Bond</button>
-                </div>
-                
-                <div class="vows-section">
-                    <h3>Vows</h3>
-                    <div id="vows-container">
-                        <!-- Vows will be populated here -->
-                    </div>
-                    <button id="add-vow-btn" class="btn btn-small">Add Vow</button>
                 </div>
             </div>
         </div>
         
-        <div class="controls">
-            <button id="generate-btn" class="btn">Generate Character</button>
-        </div>
     </div>
     
     <!-- Asset Selection Modal -->
     <div id="asset-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content ds-u-padding--3">
             <span class="close-modal">&times;</span>
-            <h2>Select Assets</h2>
+            <h2 class="ds-h2">Select Assets</h2>
             <div class="asset-selection">
-                <div class="available-assets">
-                    <h3>Available Assets</h3>
-                    <ul id="available-assets-list"></ul>
+                <div class="available-assets ds-u-padding--2">
+                    <h3 class="ds-h3">Available Assets</h3>
+                    <ul id="available-assets-list" class="ds-c-list--bare"></ul>
                 </div>
-                <div class="selected-assets">
-                    <h3>Selected Assets</h3>
-                    <ul id="selected-assets-list"></ul>
+                <div class="selected-assets ds-u-padding--2">
+                    <h3 class="ds-h3">Selected Assets</h3>
+                    <ul id="selected-assets-list" class="ds-c-list--bare"></ul>
                 </div>
             </div>
-            <button id="save-assets-btn" class="btn">Save Selection</button>
+            <button id="save-assets-btn" class="ds-c-button ds-c-button--success">Save Selection</button>
         </div>
     </div>
     
     <!-- Bond Modal -->
     <div id="bond-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content ds-u-padding--3">
             <span class="close-modal">&times;</span>
-            <h2>Add Bond</h2>
-            <div class="form-group">
-                <label for="bond-name">Bond Name:</label>
-                <input type="text" id="bond-name" class="editable-field">
+            <h2 class="ds-h2">Add Bond</h2>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="bond-name">Bond Name:</label>
+                <input type="text" id="bond-name" class="ds-c-field">
             </div>
-            <div class="form-group">
-                <label for="bond-progress">Progress:</label>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="bond-progress">Progress:</label>
                 <div id="bond-progress" class="checkbox-track progress-track-edit">
                     <!-- Checkboxes will be added by JavaScript -->
                 </div>
             </div>
-            <button id="save-bond-btn" class="btn">Save Bond</button>
+            <button id="save-bond-btn" class="ds-c-button ds-c-button--success">Save Bond</button>
         </div>
     </div>
     
     <!-- Vow Modal -->
     <div id="vow-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content ds-u-padding--3">
             <span class="close-modal">&times;</span>
-            <h2>Add Vow</h2>
-            <div class="form-group">
-                <label for="vow-description">Description:</label>
-                <textarea id="vow-description" class="editable-textarea" rows="2"></textarea>
+            <h2 class="ds-h2">Add Vow</h2>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="vow-description">Description:</label>
+                <textarea id="vow-description" class="ds-c-field" rows="2"></textarea>
             </div>
-            <div class="form-group">
-                <label for="vow-rank">Rank:</label>
-                <select id="vow-rank" class="editable-field">
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="vow-rank">Rank:</label>
+                <select id="vow-rank" class="ds-c-field">
                     <option value="Troublesome">Troublesome</option>
                     <option value="Dangerous">Dangerous</option>
                     <option value="Formidable">Formidable</option>
@@ -172,13 +176,13 @@
                     <option value="Epic">Epic</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="vow-progress">Progress:</label>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="vow-progress">Progress:</label>
                 <div id="vow-progress" class="checkbox-track progress-track-edit">
                     <!-- Checkboxes will be added by JavaScript -->
                 </div>
             </div>
-            <button id="save-vow-btn" class="btn">Save Vow</button>
+            <button id="save-vow-btn" class="ds-c-button ds-c-button--success">Save Vow</button>
         </div>
     </div>
     
