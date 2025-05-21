@@ -1,5 +1,6 @@
 import { generateCharacter } from './generator';
 import { Character, assetOptions, Asset, Bond, Vow, vowRanks } from './types';
+import DiceRoller from './diceRoller';
 
 // DOM elements
 const generateBtn = document.getElementById('generate-btn') as HTMLButtonElement;
@@ -12,6 +13,9 @@ const witsEl = document.getElementById('wits') as HTMLInputElement;
 const backgroundEl = document.getElementById('background') as HTMLTextAreaElement;
 const assetsListEl = document.getElementById('assets-list') as HTMLUListElement;
 const manageAssetsBtn = document.getElementById('manage-assets-btn') as HTMLButtonElement;
+const rollDiceBtn = document.getElementById('roll-dice-btn') as HTMLButtonElement;
+const diceContainerEl = document.getElementById('dice-container') as HTMLDivElement;
+const diceResultsEl = document.getElementById('dice-results') as HTMLDivElement;
 
 // Condition elements
 const healthTrackEl = document.getElementById('health') as HTMLDivElement;
@@ -47,792 +51,263 @@ const vowRankEl = document.getElementById('vow-rank') as HTMLSelectElement;
 const vowProgressEl = document.getElementById('vow-progress') as HTMLDivElement;
 const saveVowBtn = document.getElementById('save-vow-btn') as HTMLButtonElement;
 
-// Current character data
-let currentAssets: Asset[] = [];
-let currentBonds: Bond[] = [];
-let currentVows: Vow[] = [];
-let editingBondIndex: number | null = null;
-let editingVowIndex: number | null = null;
+// Current character state
+let currentCharacter: Character | null = null;
+let diceRoller: DiceRoller | null = null;
 
-// Initialize checkbox tracks
-function initializeCheckboxTracks() {
-    // Create health track (0-5)
-    createCheckboxTrack(healthTrackEl, 5, 'health');
-    
-    // Create spirit track (0-5)
-    createCheckboxTrack(spiritTrackEl, 5, 'spirit');
-    
-    // Create supply track (0-5)
-    createCheckboxTrack(supplyTrackEl, 5, 'supply');
-    
-    // Create momentum track (-6 to +10)
-    createMomentumTrack(momentumTrackEl);
-    
-    // Create bond progress track (0-10)
-    createCheckboxTrack(bondProgressEl, 10, 'bond-progress');
-    
-    // Create vow progress track (0-10)
-    createCheckboxTrack(vowProgressEl, 10, 'vow-progress');
+// Initialize dice roller
+function initDiceRoller() {
+    if (diceRoller) {
+        diceRoller.dispose();
+    }
+    diceRoller = new DiceRoller(diceContainerEl);
 }
 
-// Function to create a checkbox track
-function createCheckboxTrack(container: HTMLElement, count: number, name: string) {
+// Create condition track
+function createConditionTrack(container: HTMLElement, value: number, max: number = 5) {
     container.innerHTML = '';
-    
-    // Add value display
-    const valueDisplay = document.createElement('div');
-    valueDisplay.className = 'meter-value-display';
-    valueDisplay.id = `${name}-value`;
-    valueDisplay.textContent = '0';
-    
-    const trackContainer = document.createElement('div');
-    trackContainer.className = 'checkbox-track';
-    
-    for (let i = 0; i < count; i++) {
-        const checkboxContainer = document.createElement('div');
-        checkboxContainer.className = 'checkbox-track-container';
-        
-        const label = document.createElement('label');
-        label.className = 'checkbox-container';
-        
+    for (let i = 0; i < max; i++) {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.name = name;
-        checkbox.value = (i + 1).toString();
-        checkbox.dataset.index = i.toString();
-        
-        // Add event listener to handle clicking on checkboxes
-        checkboxContainer.addEventListener('click', (e) => {
-            // Prevent default to avoid double-triggering
-            e.preventDefault();
-            
-            // Get the current state and toggle it
-            const isChecked = checkbox.checked;
-            
-            // If unchecking, update to the previous value
-            if (isChecked) {
-                updateCheckboxTrack(trackContainer, i - 1);
-                valueDisplay.textContent = i.toString();
-            } 
-            // If checking, update to this value
-            else {
-                updateCheckboxTrack(trackContainer, i);
-                valueDisplay.textContent = (i + 1).toString();
+        checkbox.checked = i < value;
+        checkbox.addEventListener('change', () => {
+            if (currentCharacter) {
+                const trackName = container.id as keyof typeof currentCharacter.condition;
+                currentCharacter.condition[trackName] = container.querySelectorAll('input:checked').length;
             }
         });
-        
-        const checkmark = document.createElement('span');
-        checkmark.className = 'checkmark';
-        
-        const valueLabel = document.createElement('div');
-        valueLabel.className = 'checkbox-value';
-        valueLabel.textContent = (i + 1).toString();
-        
-        label.appendChild(checkbox);
-        label.appendChild(checkmark);
-        checkboxContainer.appendChild(label);
-        checkboxContainer.appendChild(valueLabel);
-        trackContainer.appendChild(checkboxContainer);
+        container.appendChild(checkbox);
     }
-    
-    container.appendChild(trackContainer);
-    container.appendChild(valueDisplay);
 }
 
-// Function to create momentum track (-6 to +10)
-function createMomentumTrack(container: HTMLElement) {
+// Create progress track
+function createProgressTrack(container: HTMLElement, value: number = 0) {
     container.innerHTML = '';
-    
-    // Add value display
-    const valueDisplay = document.createElement('div');
-    valueDisplay.className = 'meter-value-display';
-    valueDisplay.id = 'momentum-value';
-    valueDisplay.textContent = '0';
-    
-    const trackContainer = document.createElement('div');
-    trackContainer.className = 'checkbox-track momentum-track';
-    
-    // Create negative momentum (-6 to -1)
-    for (let i = 6; i >= 1; i--) {
-        const checkboxContainer = document.createElement('div');
-        checkboxContainer.className = 'checkbox-track-container';
-        
-        const label = document.createElement('label');
-        label.className = 'checkbox-container';
-        
+    for (let i = 0; i < 10; i++) {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.name = 'momentum';
-        checkbox.value = (-i).toString();
-        checkbox.dataset.index = (-i).toString();
-        
-        // Add event listener
-        checkboxContainer.addEventListener('click', (e) => {
-            e.preventDefault();
-            updateMomentumTrack(-i);
-            valueDisplay.textContent = (-i).toString();
-        });
-        
-        const checkmark = document.createElement('span');
-        checkmark.className = 'checkmark';
-        
-        const valueLabel = document.createElement('div');
-        valueLabel.className = 'checkbox-value';
-        valueLabel.textContent = (-i).toString();
-        
-        label.appendChild(checkbox);
-        label.appendChild(checkmark);
-        checkboxContainer.appendChild(label);
-        checkboxContainer.appendChild(valueLabel);
-        trackContainer.appendChild(checkboxContainer);
+        checkbox.checked = i < value;
+        container.appendChild(checkbox);
     }
-    
-    // Create positive momentum (0 to +10)
-    for (let i = 0; i <= 10; i++) {
-        const checkboxContainer = document.createElement('div');
-        checkboxContainer.className = 'checkbox-track-container';
-        
-        const label = document.createElement('label');
-        label.className = 'checkbox-container';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.name = 'momentum';
-        checkbox.value = i.toString();
-        checkbox.dataset.index = i.toString();
-        
-        // Add event listener
-        checkboxContainer.addEventListener('click', (e) => {
-            e.preventDefault();
-            updateMomentumTrack(i);
-            valueDisplay.textContent = i.toString();
-        });
-        
-        const checkmark = document.createElement('span');
-        checkmark.className = 'checkmark';
-        
-        const valueLabel = document.createElement('div');
-        valueLabel.className = 'checkbox-value';
-        valueLabel.textContent = i.toString();
-        
-        label.appendChild(checkbox);
-        label.appendChild(checkmark);
-        checkboxContainer.appendChild(label);
-        checkboxContainer.appendChild(valueLabel);
-        trackContainer.appendChild(checkboxContainer);
-    }
-    
-    container.appendChild(trackContainer);
-    container.appendChild(valueDisplay);
 }
 
-// Function to update a checkbox track when a box is clicked
-function updateCheckboxTrack(container: HTMLElement, index: number) {
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    
-    checkboxes.forEach((checkbox: HTMLInputElement) => {
-        const checkboxIndex = parseInt(checkbox.dataset.index as string);
-        checkbox.checked = checkboxIndex <= index;
-    });
-}
-
-// Function to update the momentum track
-function updateMomentumTrack(value: number) {
-    const checkboxes = momentumTrackEl.querySelector('.checkbox-track')!.querySelectorAll('input[type="checkbox"]');
-    
-    checkboxes.forEach((checkbox: HTMLInputElement) => {
-        const checkboxValue = parseInt(checkbox.dataset.index as string);
-        checkbox.checked = checkboxValue === value;
-    });
-}
-
-// Function to get the value of a checkbox track
-function getCheckboxTrackValue(container: HTMLElement): number {
-    const checkboxes = container.querySelector('.checkbox-track')!.querySelectorAll('input[type="checkbox"]');
-    let value = 0;
-    
-    checkboxes.forEach((checkbox: HTMLInputElement) => {
-        if (checkbox.checked) {
-            const checkboxValue = parseInt(checkbox.value);
-            if (checkboxValue > value) {
-                value = checkboxValue;
-            }
-        }
-    });
-    
-    return value;
-}
-
-// Function to get the momentum value
-function getMomentumValue(): number {
-    const checkboxes = momentumTrackEl.querySelector('.checkbox-track')!.querySelectorAll('input[type="checkbox"]:checked');
-    if (checkboxes.length === 0) return 0;
-    
-    return parseInt((checkboxes[0] as HTMLInputElement).dataset.index as string);
-}
-
-// Function to set the value of a checkbox track
-function setCheckboxTrackValue(container: HTMLElement, value: number) {
-    const trackContainer = container.querySelector('.checkbox-track')!;
-    const valueDisplay = container.querySelector('.meter-value-display')!;
-    const checkboxes = trackContainer.querySelectorAll('input[type="checkbox"]');
-    
-    checkboxes.forEach((checkbox: HTMLInputElement) => {
-        const checkboxIndex = parseInt(checkbox.dataset.index as string);
-        checkbox.checked = checkboxIndex < value;
-    });
-    
-    // Check the exact value checkbox
-    const valueCheckbox = Array.from(checkboxes).find(
-        (checkbox: HTMLInputElement) => parseInt(checkbox.dataset.index as string) === value - 1
-    ) as HTMLInputElement | undefined;
-    
-    if (valueCheckbox) {
-        valueCheckbox.checked = true;
-    }
-    
-    // Update the value display
-    valueDisplay.textContent = value.toString();
-}
-
-// Function to set the momentum value
-function setMomentumValue(value: number) {
-    updateMomentumTrack(value);
-    const valueDisplay = momentumTrackEl.querySelector('.meter-value-display')!;
-    valueDisplay.textContent = value.toString();
-}
-
-// Function to update the UI with character data
-function updateCharacterDisplay(character: Character): void {
-    // Update name
+// Update character display
+function updateCharacterDisplay(character: Character) {
     characterNameEl.value = character.name;
-    
-    // Update stats
     edgeEl.value = character.stats.edge.toString();
     heartEl.value = character.stats.heart.toString();
     ironEl.value = character.stats.iron.toString();
     shadowEl.value = character.stats.shadow.toString();
     witsEl.value = character.stats.wits.toString();
-    
-    // Update background
     backgroundEl.value = character.background;
-    
-    // Update condition meters
-    setCheckboxTrackValue(healthTrackEl, character.condition.health);
-    setCheckboxTrackValue(spiritTrackEl, character.condition.spirit);
-    setCheckboxTrackValue(supplyTrackEl, character.condition.supply);
-    setMomentumValue(character.condition.momentum);
-    
+
+    // Update condition tracks
+    createConditionTrack(healthTrackEl, character.condition.health);
+    createConditionTrack(spiritTrackEl, character.condition.spirit);
+    createConditionTrack(supplyTrackEl, character.condition.supply);
+    createConditionTrack(momentumTrackEl, character.condition.momentum, 10);
+
     // Update assets
-    currentAssets = [...character.assets];
-    updateAssetsDisplay();
-    
-    // Update bonds and vows
-    currentBonds = [...character.bonds];
-    currentVows = [...character.vows];
-    updateBondsDisplay();
-    updateVowsDisplay();
+    updateAssetsList(character.assets);
+
+    // Update bonds
+    updateBondsList(character.bonds);
+
+    // Update vows
+    updateVowsList(character.vows);
 }
 
-// Function to create an asset card element
-function createAssetCard(asset: Asset, isSelectable: boolean = false, clickHandler?: () => void): HTMLDivElement {
-    const card = document.createElement('div');
-    card.className = 'asset-card';
-    if (isSelectable) {
-        card.classList.add('selectable');
-    }
-    
-    const header = document.createElement('div');
-    header.className = 'asset-header';
-    header.textContent = asset.name;
-    card.appendChild(header);
-    
-    const description = document.createElement('div');
-    description.className = 'asset-description';
-    description.textContent = asset.description;
-    card.appendChild(description);
-    
-    const abilities = document.createElement('div');
-    abilities.className = 'asset-abilities';
-    
-    asset.abilities.forEach((ability, index) => {
-        const abilityContainer = document.createElement('div');
-        abilityContainer.className = 'ability-container';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = asset.checked[index];
-        checkbox.id = `${asset.name.replace(/\s+/g, '-')}-ability-${index}`;
-        checkbox.addEventListener('change', () => {
-            asset.checked[index] = checkbox.checked;
-        });
-        
-        const label = document.createElement('label');
-        label.htmlFor = checkbox.id;
-        label.textContent = ability;
-        
-        abilityContainer.appendChild(checkbox);
-        abilityContainer.appendChild(label);
-        abilities.appendChild(abilityContainer);
-    });
-    
-    card.appendChild(abilities);
-    
-    if (clickHandler) {
-        card.addEventListener('click', (e) => {
-            // Don't trigger the handler if clicking on a checkbox
-            if (!(e.target as HTMLElement).closest('input[type="checkbox"]')) {
-                clickHandler();
-            }
-        });
-    }
-    
-    return card;
-}
-
-// Function to update the assets display
-function updateAssetsDisplay(): void {
+// Update assets list
+function updateAssetsList(assets: Asset[]) {
     assetsListEl.innerHTML = '';
-    
-    if (currentAssets.length === 0) {
-        const emptyMessage = document.createElement('li');
-        emptyMessage.textContent = 'No assets selected';
-        assetsListEl.appendChild(emptyMessage);
-        return;
-    }
-    
-    currentAssets.forEach(asset => {
+    assets.forEach(asset => {
         const li = document.createElement('li');
-        li.appendChild(createAssetCard(asset));
+        li.className = 'asset-item ds-u-padding--2';
+        li.innerHTML = `
+            <h4 class="ds-h4">${asset.name}</h4>
+            <p>${asset.description}</p>
+            <ul class="ds-c-list">
+                ${asset.abilities.map((ability, index) => `
+                    <li>
+                        <input type="checkbox" ${asset.checked[index] ? 'checked' : ''}>
+                        ${ability}
+                    </li>
+                `).join('')}
+            </ul>
+        `;
         assetsListEl.appendChild(li);
     });
 }
 
-// Function to create a bond element with checkbox progress
-function createBondElement(bond: Bond, index: number): HTMLDivElement {
-    const bondElement = document.createElement('div');
-    bondElement.className = 'progress-track';
-    
-    const header = document.createElement('div');
-    header.className = 'progress-track-header';
-    
-    const title = document.createElement('div');
-    title.className = 'progress-track-title';
-    title.textContent = bond.name;
-    
-    const deleteBtn = document.createElement('span');
-    deleteBtn.className = 'progress-track-delete';
-    deleteBtn.textContent = '×';
-    deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentBonds.splice(index, 1);
-        updateBondsDisplay();
-    });
-    
-    header.appendChild(title);
-    header.appendChild(deleteBtn);
-    bondElement.appendChild(header);
-    
-    // Create progress track with checkboxes
-    const progressTrack = document.createElement('div');
-    progressTrack.className = 'checkbox-track';
-    
-    for (let i = 0; i < 10; i++) {
-        const checkboxContainer = document.createElement('div');
-        checkboxContainer.className = 'checkbox-track-container';
-        
-        const label = document.createElement('label');
-        label.className = 'checkbox-container';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = i < bond.progress;
-        checkbox.dataset.index = i.toString();
-        
-        // Add event listener to handle clicking on checkboxes
-        checkboxContainer.addEventListener('click', (e) => {
-            e.stopPropagation();
-            
-            // If unchecking, update to the previous value
-            if (checkbox.checked) {
-                bond.progress = i;
-            } 
-            // If checking, update to this value
-            else {
-                bond.progress = i + 1;
-            }
-            
-            updateBondProgress(progressTrack, bond.progress);
-            
-            // Update value display
-            const valueDisplay = bondElement.querySelector('.meter-value-display');
-            if (valueDisplay) {
-                valueDisplay.textContent = bond.progress.toString();
-            }
-        });
-        
-        const checkmark = document.createElement('span');
-        checkmark.className = 'checkmark';
-        
-        const valueLabel = document.createElement('div');
-        valueLabel.className = 'checkbox-value';
-        valueLabel.textContent = (i + 1).toString();
-        
-        label.appendChild(checkbox);
-        label.appendChild(checkmark);
-        checkboxContainer.appendChild(label);
-        checkboxContainer.appendChild(valueLabel);
-        progressTrack.appendChild(checkboxContainer);
-    }
-    
-    bondElement.appendChild(progressTrack);
-    
-    // Add value display
-    const valueDisplay = document.createElement('div');
-    valueDisplay.className = 'meter-value-display';
-    valueDisplay.textContent = bond.progress.toString();
-    bondElement.appendChild(valueDisplay);
-    
-    // Add edit functionality
-    bondElement.addEventListener('click', () => {
-        editingBondIndex = index;
-        bondNameEl.value = bond.name;
-        setCheckboxTrackValue(bondProgressEl, bond.progress);
-        bondModal.style.display = 'block';
-    });
-    
-    return bondElement;
-}
-
-// Function to update bond progress checkboxes
-function updateBondProgress(container: HTMLElement, value: number) {
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    
-    checkboxes.forEach((checkbox: HTMLInputElement) => {
-        const checkboxIndex = parseInt(checkbox.dataset.index as string);
-        checkbox.checked = checkboxIndex < value;
-    });
-}
-
-// Function to create a vow element with checkbox progress
-function createVowElement(vow: Vow, index: number): HTMLDivElement {
-    const vowElement = document.createElement('div');
-    vowElement.className = 'progress-track';
-    
-    const header = document.createElement('div');
-    header.className = 'progress-track-header';
-    
-    const title = document.createElement('div');
-    title.className = 'progress-track-title';
-    title.textContent = vow.description;
-    
-    const rank = document.createElement('div');
-    rank.className = 'progress-track-rank';
-    rank.textContent = vow.rank;
-    
-    const deleteBtn = document.createElement('span');
-    deleteBtn.className = 'progress-track-delete';
-    deleteBtn.textContent = '×';
-    deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentVows.splice(index, 1);
-        updateVowsDisplay();
-    });
-    
-    header.appendChild(title);
-    header.appendChild(rank);
-    header.appendChild(deleteBtn);
-    vowElement.appendChild(header);
-    
-    // Create progress track with checkboxes
-    const progressTrack = document.createElement('div');
-    progressTrack.className = 'checkbox-track';
-    
-    for (let i = 0; i < 10; i++) {
-        const checkboxContainer = document.createElement('div');
-        checkboxContainer.className = 'checkbox-track-container';
-        
-        const label = document.createElement('label');
-        label.className = 'checkbox-container';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = i < vow.progress;
-        checkbox.dataset.index = i.toString();
-        
-        // Add event listener to handle clicking on checkboxes
-        checkboxContainer.addEventListener('click', (e) => {
-            e.stopPropagation();
-            
-            // If unchecking, update to the previous value
-            if (checkbox.checked) {
-                vow.progress = i;
-            } 
-            // If checking, update to this value
-            else {
-                vow.progress = i + 1;
-            }
-            
-            updateVowProgress(progressTrack, vow.progress);
-            
-            // Update value display
-            const valueDisplay = vowElement.querySelector('.meter-value-display');
-            if (valueDisplay) {
-                valueDisplay.textContent = vow.progress.toString();
-            }
-        });
-        
-        const checkmark = document.createElement('span');
-        checkmark.className = 'checkmark';
-        
-        const valueLabel = document.createElement('div');
-        valueLabel.className = 'checkbox-value';
-        valueLabel.textContent = (i + 1).toString();
-        
-        label.appendChild(checkbox);
-        label.appendChild(checkmark);
-        checkboxContainer.appendChild(label);
-        checkboxContainer.appendChild(valueLabel);
-        progressTrack.appendChild(checkboxContainer);
-    }
-    
-    vowElement.appendChild(progressTrack);
-    
-    // Add value display
-    const valueDisplay = document.createElement('div');
-    valueDisplay.className = 'meter-value-display';
-    valueDisplay.textContent = vow.progress.toString();
-    vowElement.appendChild(valueDisplay);
-    
-    // Add edit functionality
-    vowElement.addEventListener('click', () => {
-        editingVowIndex = index;
-        vowDescriptionEl.value = vow.description;
-        vowRankEl.value = vow.rank;
-        setCheckboxTrackValue(vowProgressEl, vow.progress);
-        vowModal.style.display = 'block';
-    });
-    
-    return vowElement;
-}
-
-// Function to update vow progress checkboxes
-function updateVowProgress(container: HTMLElement, value: number) {
-    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
-    
-    checkboxes.forEach((checkbox: HTMLInputElement) => {
-        const checkboxIndex = parseInt(checkbox.dataset.index as string);
-        checkbox.checked = checkboxIndex < value;
-    });
-}
-
-// Function to update the bonds display
-function updateBondsDisplay(): void {
+// Update bonds list
+function updateBondsList(bonds: Bond[]) {
     bondsContainerEl.innerHTML = '';
-    
-    if (currentBonds.length === 0) {
-        const emptyMessage = document.createElement('div');
-        emptyMessage.textContent = 'No bonds forged yet';
-        emptyMessage.style.fontStyle = 'italic';
-        emptyMessage.style.color = '#c0c0c0';
-        bondsContainerEl.appendChild(emptyMessage);
-        return;
-    }
-    
-    currentBonds.forEach((bond, index) => {
-        bondsContainerEl.appendChild(createBondElement(bond, index));
+    bonds.forEach(bond => {
+        const bondElement = document.createElement('div');
+        bondElement.className = 'bond-item ds-u-padding--2';
+        bondElement.innerHTML = `
+            <h4 class="ds-h4">${bond.name}</h4>
+            <div class="progress-track">
+                ${createProgressTrackHTML(bond.progress)}
+            </div>
+        `;
+        bondsContainerEl.appendChild(bondElement);
     });
 }
 
-// Function to update the vows display
-function updateVowsDisplay(): void {
+// Update vows list
+function updateVowsList(vows: Vow[]) {
     vowsContainerEl.innerHTML = '';
-    
-    if (currentVows.length === 0) {
-        const emptyMessage = document.createElement('div');
-        emptyMessage.textContent = 'No vows sworn yet';
-        emptyMessage.style.fontStyle = 'italic';
-        emptyMessage.style.color = '#c0c0c0';
-        vowsContainerEl.appendChild(emptyMessage);
-        return;
-    }
-    
-    currentVows.forEach((vow, index) => {
-        vowsContainerEl.appendChild(createVowElement(vow, index));
+    vows.forEach(vow => {
+        const vowElement = document.createElement('div');
+        vowElement.className = 'vow-item ds-u-padding--2';
+        vowElement.innerHTML = `
+            <h4 class="ds-h4">${vow.description}</h4>
+            <p>Rank: ${vow.rank}</p>
+            <div class="progress-track">
+                ${createProgressTrackHTML(vow.progress)}
+            </div>
+        `;
+        vowsContainerEl.appendChild(vowElement);
     });
 }
 
-// Function to check if an asset is in the current assets
-function isAssetSelected(assetName: string): boolean {
-    return currentAssets.some(asset => asset.name === assetName);
+// Helper function to create progress track HTML
+function createProgressTrackHTML(value: number): string {
+    return Array(10).fill(0).map((_, i) => 
+        `<input type="checkbox" ${i < value ? 'checked' : ''}>`)
+        .join('');
 }
 
-// Function to populate the asset selection modal
-function populateAssetModal(): void {
-    // Clear existing lists
+// Modal management
+function openModal(modal: HTMLElement) {
+    modal.style.display = 'block';
+}
+
+function closeModal(modal: HTMLElement) {
+    modal.style.display = 'none';
+}
+
+// Asset modal management
+function populateAssetModal() {
+    if (!currentCharacter) return;
+
     availableAssetsList.innerHTML = '';
     selectedAssetsList.innerHTML = '';
-    
-    // Populate available assets (excluding already selected ones)
+
+    const selectedAssetNames = new Set(currentCharacter.assets.map(a => a.name));
+
     assetOptions.forEach(asset => {
-        if (!isAssetSelected(asset.name)) {
-            const li = document.createElement('li');
-            
-            // Create a deep copy of the asset to avoid modifying the original
-            const assetCopy = JSON.parse(JSON.stringify(asset));
-            
-            li.appendChild(createAssetCard(assetCopy, true, () => {
-                // Add to selected assets
-                if (!isAssetSelected(assetCopy.name)) {
-                    currentAssets.push(assetCopy);
-                    populateAssetModal(); // Refresh lists
-                }
-            }));
-            
+        const li = document.createElement('li');
+        li.className = 'asset-item ds-u-padding--2';
+        li.innerHTML = `
+            <h4 class="ds-h4">${asset.name}</h4>
+            <p>${asset.description}</p>
+        `;
+        li.addEventListener('click', () => {
+            if (selectedAssetNames.has(asset.name)) {
+                selectedAssetNames.delete(asset.name);
+                li.classList.remove('selected');
+            } else {
+                selectedAssetNames.add(asset.name);
+                li.classList.add('selected');
+            }
+        });
+
+        if (selectedAssetNames.has(asset.name)) {
+            li.classList.add('selected');
+            selectedAssetsList.appendChild(li.cloneNode(true));
+        } else {
             availableAssetsList.appendChild(li);
         }
     });
-    
-    // Populate selected assets
-    currentAssets.forEach(asset => {
-        const li = document.createElement('li');
-        
-        li.appendChild(createAssetCard(asset, true, () => {
-            // Remove from selected assets
-            currentAssets = currentAssets.filter(a => a.name !== asset.name);
-            populateAssetModal(); // Refresh lists
-        }));
-        
-        selectedAssetsList.appendChild(li);
-    });
 }
 
-// Generate a character when the button is clicked
+// Event Listeners
 generateBtn.addEventListener('click', () => {
-    const character = generateCharacter();
-    updateCharacterDisplay(character);
+    currentCharacter = generateCharacter();
+    updateCharacterDisplay(currentCharacter);
 });
 
-// Open the asset selection modal
+rollDiceBtn.addEventListener('click', async () => {
+    if (!diceRoller) {
+        initDiceRoller();
+    }
+    const results = await diceRoller?.rollDice();
+    if (results) {
+        diceResultsEl.textContent = `Results: ${results.join(', ')}`;
+    }
+});
+
 manageAssetsBtn.addEventListener('click', () => {
     populateAssetModal();
-    assetModal.style.display = 'block';
+    openModal(assetModal);
 });
 
-// Open the bond modal to add a new bond
-addBondBtn.addEventListener('click', () => {
-    editingBondIndex = null;
-    bondNameEl.value = '';
-    setCheckboxTrackValue(bondProgressEl, 0);
-    bondModal.style.display = 'block';
-});
+closeAssetModal.addEventListener('click', () => closeModal(assetModal));
 
-// Open the vow modal to add a new vow
-addVowBtn.addEventListener('click', () => {
-    editingVowIndex = null;
-    vowDescriptionEl.value = '';
-    vowRankEl.value = 'Troublesome';
-    setCheckboxTrackValue(vowProgressEl, 0);
-    vowModal.style.display = 'block';
-});
-
-// Close the asset modal
-closeAssetModal.addEventListener('click', () => {
-    assetModal.style.display = 'none';
-});
-
-// Close the bond modal
-closeBondModal.addEventListener('click', () => {
-    bondModal.style.display = 'none';
-});
-
-// Close the vow modal
-closeVowModal.addEventListener('click', () => {
-    vowModal.style.display = 'none';
-});
-
-// Close modals when clicking outside of them
-window.addEventListener('click', (event) => {
-    if (event.target === assetModal) {
-        assetModal.style.display = 'none';
-    } else if (event.target === bondModal) {
-        bondModal.style.display = 'none';
-    } else if (event.target === vowModal) {
-        vowModal.style.display = 'none';
-    }
-});
-
-// Save the selected assets
 saveAssetsBtn.addEventListener('click', () => {
-    updateAssetsDisplay();
-    assetModal.style.display = 'none';
+    if (!currentCharacter) return;
+    
+    const selectedAssets = Array.from(selectedAssetsList.children).map(li => {
+        const assetName = li.querySelector('.ds-h4')?.textContent || '';
+        return assetOptions.find(a => a.name === assetName)!;
+    });
+
+    currentCharacter.assets = selectedAssets;
+    updateAssetsList(selectedAssets);
+    closeModal(assetModal);
 });
 
-// Save the bond
+addBondBtn.addEventListener('click', () => {
+    createProgressTrack(bondProgressEl);
+    openModal(bondModal);
+});
+
+closeBondModal.addEventListener('click', () => closeModal(bondModal));
+
 saveBondBtn.addEventListener('click', () => {
-    const bondName = bondNameEl.value.trim();
-    if (!bondName) {
-        alert('Please enter a bond name');
-        return;
-    }
-    
-    const bondProgress = getCheckboxTrackValue(bondProgressEl);
-    
-    if (editingBondIndex !== null) {
-        // Edit existing bond
-        currentBonds[editingBondIndex] = {
-            name: bondName,
-            progress: bondProgress
-        };
-    } else {
-        // Add new bond
-        currentBonds.push({
-            name: bondName,
-            progress: bondProgress
-        });
-    }
-    
-    updateBondsDisplay();
-    bondModal.style.display = 'none';
+    if (!currentCharacter) return;
+
+    const newBond: Bond = {
+        name: bondNameEl.value,
+        progress: Array.from(bondProgressEl.querySelectorAll('input:checked')).length
+    };
+
+    currentCharacter.bonds.push(newBond);
+    updateBondsList(currentCharacter.bonds);
+    closeModal(bondModal);
+    bondNameEl.value = '';
 });
 
-// Save the vow
+addVowBtn.addEventListener('click', () => {
+    createProgressTrack(vowProgressEl);
+    openModal(vowModal);
+});
+
+closeVowModal.addEventListener('click', () => closeModal(vowModal));
+
 saveVowBtn.addEventListener('click', () => {
-    const vowDescription = vowDescriptionEl.value.trim();
-    if (!vowDescription) {
-        alert('Please enter a vow description');
-        return;
-    }
-    
-    const vowRank = vowRankEl.value;
-    const vowProgress = getCheckboxTrackValue(vowProgressEl);
-    
-    if (editingVowIndex !== null) {
-        // Edit existing vow
-        currentVows[editingVowIndex] = {
-            description: vowDescription,
-            rank: vowRank,
-            progress: vowProgress
-        };
-    } else {
-        // Add new vow
-        currentVows.push({
-            description: vowDescription,
-            rank: vowRank,
-            progress: vowProgress
-        });
-    }
-    
-    updateVowsDisplay();
-    vowModal.style.display = 'none';
+    if (!currentCharacter) return;
+
+    const newVow: Vow = {
+        description: vowDescriptionEl.value,
+        rank: vowRankEl.value,
+        progress: Array.from(vowProgressEl.querySelectorAll('input:checked')).length
+    };
+
+    currentCharacter.vows.push(newVow);
+    updateVowsList(currentCharacter.vows);
+    closeModal(vowModal);
+    vowDescriptionEl.value = '';
 });
 
-// Initialize the app
+// Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize checkbox tracks
-    initializeCheckboxTracks();
-    
-    // Generate an initial character
-    const character = generateCharacter();
-    updateCharacterDisplay(character);
+    initDiceRoller();
+    // Create empty condition tracks
+    createConditionTrack(healthTrackEl, 5);
+    createConditionTrack(spiritTrackEl, 5);
+    createConditionTrack(supplyTrackEl, 5);
+    createConditionTrack(momentumTrackEl, 2, 10);
 });

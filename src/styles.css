@@ -63,6 +63,34 @@ body.ds-base {
     align-items: start;
 }
 
+.name-dice-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dice-container {
+    width: 100%;
+    height: 200px;
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.dice-results {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--color-text-accent);
+    padding: 10px;
+    background-color: var(--color-surface-light);
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
 /* Form fields */
 .ds-c-field {
     background-color: var(--color-background);

@@ -8,7 +8,9 @@
     "build": "parcel build"
   },
   "dependencies": {
-    "@cmsgov/design-system": "^4.0.0"
+    "@cmsgov/design-system": "^4.0.0",
+    "@types/three": "^0.176.0",
+    "three": "^0.176.0"
   },
   "devDependencies": {
     "parcel": "^2.9.3",
