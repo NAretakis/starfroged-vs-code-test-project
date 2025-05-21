@@ -1,4 +1,11 @@
-// Define the character stats interface
+/**
+ * Ironsworn Character Generator
+ * Type definitions and data for the application
+ */
+
+/**
+ * Character stats interface representing the five core stats in Ironsworn
+ */
 export interface CharacterStats {
     edge: number;
     heart: number;
@@ -7,7 +14,9 @@ export interface CharacterStats {
     wits: number;
 }
 
-// Define the asset interface
+/**
+ * Asset interface representing character abilities and talents
+ */
 export interface Asset {
     name: string;
     description: string;
@@ -15,7 +24,9 @@ export interface Asset {
     checked: boolean[];
 }
 
-// Define the character condition meters
+/**
+ * Character condition meters interface
+ */
 export interface CharacterCondition {
     health: number;
     spirit: number;
@@ -23,20 +34,26 @@ export interface CharacterCondition {
     momentum: number;
 }
 
-// Define a bond interface
+/**
+ * Bond interface representing character connections to NPCs or communities
+ */
 export interface Bond {
     name: string;
     progress: number;
 }
 
-// Define a vow interface
+/**
+ * Vow interface representing character quests and goals
+ */
 export interface Vow {
     description: string;
     rank: string;
     progress: number;
 }
 
-// Define the character interface
+/**
+ * Complete character interface combining all character elements
+ */
 export interface Character {
     name: string;
     stats: CharacterStats;
@@ -47,7 +64,9 @@ export interface Character {
     vows: Vow[];
 }
 
-// Define name options
+/**
+ * List of character name options for random generation
+ */
 export const nameOptions: string[] = [
     "Aeric", "Brana", "Clovis", "Dagna", "Elstan", 
     "Fenna", "Gorm", "Halla", "Ivar", "Jora",
@@ -55,7 +74,9 @@ export const nameOptions: string[] = [
     "Phelan", "Runa", "Silas", "Thora", "Varga"
 ];
 
-// Define background options
+/**
+ * List of character background options for random generation
+ */
 export const backgroundOptions: string[] = [
     "Raised in a small fishing village on the coast",
     "Former soldier who served in the border wars",
@@ -69,12 +90,16 @@ export const backgroundOptions: string[] = [
     "Trained as a scout for a frontier outpost"
 ];
 
-// Define vow ranks
+/**
+ * List of vow rank options from easiest to most difficult
+ */
 export const vowRanks: string[] = [
     "Troublesome", "Dangerous", "Formidable", "Extreme", "Epic"
 ];
 
-// Define asset options with full details
+/**
+ * List of asset options with full details
+ */
 export const assetOptions: Asset[] = [
     {
         name: "Swordmaster",

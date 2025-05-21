@@ -1,141 +1,4 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Crimson Text', Georgia, serif;
-    line-height: 1.6;
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-}
-
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cinzel', 'Times New Roman', serif;
-    color: #c9b18c;
-    margin-bottom: 15px;
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 2.5rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    border-bottom: 2px solid #8b5e34;
-    padding-bottom: 15px;
-}
-
-.character-sheet {
-    background-color: #333333;
-    border-radius: 0;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3);
-    padding: 30px;
-    margin-bottom: 30px;
-    border: 1px solid #444444;
-}
-
-.character-header {
-    border-bottom: 2px solid #444444;
-    padding-bottom: 20px;
-    margin-bottom: 25px;
-}
-
-.name-section {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.editable-field {
-    font-family: 'Crimson Text', Georgia, serif;
-    font-size: 1.1rem;
-    border: 1px solid #8b5e34;
-    border-radius: 0;
-    padding: 8px 12px;
-    width: 100%;
-    background-color: #3a3a3a;
-    color: #e0e0e0;
-}
-
-.editable-textarea {
-    font-family: 'Crimson Text', Georgia, serif;
-    font-size: 1rem;
-    border: 1px solid #8b5e34;
-    border-radius: 0;
-    padding: 10px;
-    width: 100%;
-    resize: vertical;
-    background-color: #3a3a3a;
-    color: #e0e0e0;
-}
-
-.stats-section, .condition-section {
-    margin-bottom: 30px;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 20px;
-    margin-top: 15px;
-}
-
-.stat-box {
-    border: 1px solid #8b5e34;
-    border-radius: 0;
-    padding: 15px;
-    text-align: center;
-    background-color: #3a3a3a;
-}
-
-.stat-label, .condition-label {
-    font-family: 'Cinzel', 'Times New Roman', serif;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: #c9b18c;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-}
-
-.stat-value {
-    font-size: 24px;
-    font-weight: bold;
-    color: #e0e0e0;
-}
-
-.editable-stat {
-    width: 100%;
-    text-align: center;
-    border: 1px solid #8b5e34;
-    border-radius: 0;
-    padding: 5px;
-    background-color: #3a3a3a;
-    color: #e0e0e0;
-}
-
-.condition-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-top: 15px;
-}
-
-.condition-meter {
-    border: 1px solid #8b5e34;
-    border-radius: 0;
-    padding: 15px;
-    text-align: center;
-    background-color: #3a3a3a;
-}
+/* Custom styles to complement CMS Design System */
 
 /* Checkbox track styles */
 .checkbox-track {
@@ -154,13 +17,13 @@ h1 {
 
 .checkbox-value {
     font-size: 12px;
-    color: #c9b18c;
+    color: #323a45;
     margin-top: 5px;
 }
 
 .momentum-track {
     flex-wrap: wrap;
-    max-width: 150px;
+    max-width: 200px;
     margin: 10px auto;
 }
 
@@ -186,17 +49,18 @@ h1 {
     left: 0;
     height: 20px;
     width: 20px;
-    background-color: #3a3a3a;
-    border: 1px solid #8b5e34;
-    border-radius: 0;
+    background-color: #ffffff;
+    border: 1px solid #aeb0b5;
+    border-radius: 2px;
 }
 
 .checkbox-container:hover .checkmark {
-    background-color: #4a4a4a;
+    background-color: #f1f1f1;
 }
 
 .checkbox-container input:checked ~ .checkmark {
-    background-color: #8b5e34;
+    background-color: #0071bc;
+    border-color: #0071bc;
 }
 
 .checkmark:after {
@@ -219,142 +83,42 @@ h1 {
     transform: rotate(45deg);
 }
 
-.checkbox-label {
-    font-size: 10px;
+.meter-value-display {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #0071bc;
+    margin-top: 10px;
     text-align: center;
-    margin-top: 2px;
-    color: #c9b18c;
 }
 
-.progress-track-edit {
-    justify-content: flex-start;
-    margin: 10px 0;
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
-.details-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
+.modal-content {
+    margin: 5% auto;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
-.detail-item {
-    margin-bottom: 20px;
-}
-
-.detail-item h3 {
-    margin-bottom: 15px;
-    color: #c9b18c;
-    border-bottom: 1px solid #444444;
-    padding-bottom: 5px;
-}
-
-.progress-tracks {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
-}
-
-.bonds-section, .vows-section {
-    border: 1px solid #8b5e34;
-    border-radius: 0;
-    padding: 20px;
-    background-color: #3a3a3a;
-}
-
-.progress-track {
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 1px solid #444444;
-    border-radius: 0;
-    background-color: #333333;
-    cursor: pointer;
-}
-
-.progress-track-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.progress-track-title {
-    font-weight: bold;
-    flex-grow: 1;
-    color: #e0e0e0;
-}
-
-.progress-track-rank {
-    font-style: italic;
-    color: #c9b18c;
-    margin-right: 15px;
-}
-
-.progress-track-delete {
-    color: #8b5e34;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1.5rem;
-}
-
-.controls {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.btn {
-    background-color: #8b5e34;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 0;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-    font-family: 'Cinzel', 'Times New Roman', serif;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.btn:hover {
-    background-color: #a57347;
-}
-
-.btn-small {
-    padding: 8px 15px;
-    font-size: 14px;
-    margin-top: 15px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #c9b18c;
-    font-family: 'Cinzel', 'Times New Roman', serif;
-}
-
-ul {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-li {
-    margin-bottom: 20px;
-}
-
-/* Asset Card Styles */
+/* Asset card styles */
 .asset-card {
-    border: 1px solid #8b5e34;
-    border-radius: 0;
+    border: 1px solid #aeb0b5;
+    border-radius: 3px;
     overflow: hidden;
-    background-color: #333333;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
 
@@ -365,23 +129,22 @@ li {
 
 .asset-card.selectable:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .asset-header {
-    background-color: #8b5e34;
+    background-color: #0071bc;
     color: white;
     padding: 12px 15px;
     font-weight: bold;
     font-size: 1.1rem;
-    font-family: 'Cinzel', 'Times New Roman', serif;
 }
 
 .asset-description {
     padding: 15px;
-    border-bottom: 1px solid #444444;
+    border-bottom: 1px solid #f1f1f1;
     font-style: italic;
-    color: #c0c0c0;
+    color: #5b616b;
 }
 
 .asset-abilities {
@@ -403,85 +166,81 @@ li {
 .ability-container label {
     flex: 1;
     font-size: 1rem;
-    color: #e0e0e0;
 }
 
-/* Modal styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-.modal-content {
-    background-color: #2d2d2d;
-    margin: 5% auto;
-    padding: 30px;
-    border: 1px solid #8b5e34;
-    border-radius: 0;
-    width: 90%;
-    max-width: 1000px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-}
-
-.close-modal {
-    color: #8b5e34;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
+/* Progress track styles */
+.progress-track {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #aeb0b5;
+    border-radius: 3px;
+    background-color: #f9f9f9;
     cursor: pointer;
 }
 
-.close-modal:hover,
-.close-modal:focus {
-    color: #c9b18c;
-    text-decoration: none;
-}
-
-.asset-selection {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin: 20px 0;
-}
-
-.available-assets, .selected-assets {
-    border: 1px solid #8b5e34;
-    border-radius: 0;
-    padding: 20px;
-    max-height: 60vh;
-    overflow-y: auto;
-    background-color: #333333;
-}
-
-.modal h2 {
-    text-align: center;
-    border-bottom: 2px solid #8b5e34;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-
-.modal h3 {
-    color: #c9b18c;
+.progress-track-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 15px;
 }
 
-#save-assets-btn, #save-bond-btn, #save-vow-btn {
-    display: block;
-    margin: 20px auto 0;
+.progress-track-title {
+    font-weight: bold;
+    flex-grow: 1;
 }
 
-.meter-value-display {
-    font-size: 1.2rem;
+.progress-track-rank {
+    font-style: italic;
+    color: #5b616b;
+    margin-right: 15px;
+}
+
+.progress-track-delete {
+    color: #e31c3d;
+    cursor: pointer;
     font-weight: bold;
-    color: #c9b18c;
-    margin-top: 10px;
+    font-size: 1.5rem;
+}
+
+.progress-track-edit {
+    justify-content: flex-start;
+    margin: 10px 0;
+}
+
+/* Override some CMS Design System styles for better fit */
+.ds-c-card {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.ds-c-dialog {
+    max-width: 800px;
+}
+
+.ds-c-fieldset {
+    margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .checkbox-track {
+        gap: 3px;
+    }
+    
+    .checkbox-container {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .checkmark {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .checkbox-container .checkmark:after {
+        left: 5px;
+        top: 2px;
+        width: 4px;
+        height: 8px;
+    }
 }

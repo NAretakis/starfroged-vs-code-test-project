@@ -1,11 +1,23 @@
+/**
+ * Ironsworn Character Generator
+ * Character generation logic for creating random Ironsworn characters
+ */
 import { Character, CharacterStats, nameOptions, backgroundOptions, assetOptions, Asset, CharacterCondition, Bond, Vow, vowRanks } from './types';
 
-// Function to get a random item from an array
+/**
+ * Gets a random item from an array
+ * @param array - The array to select from
+ * @returns A random item from the array
+ */
 function getRandomItem<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
 }
 
-// Function to generate random stats
+/**
+ * Generates random stats for a character
+ * In Ironsworn, stats are +3, +2, +1, 0, and -1 distributed among the five stats
+ * @returns A CharacterStats object with randomized values
+ */
 function generateStats(): CharacterStats {
     // In Ironsworn, you distribute +3, +2, +1, 0, and -1 among the five stats
     const statValues = [3, 2, 1, 0, -1];
@@ -25,7 +37,10 @@ function generateStats(): CharacterStats {
     };
 }
 
-// Function to generate random assets (1-3)
+/**
+ * Generates random assets (1-3) for a character
+ * @returns An array of Asset objects
+ */
 function generateAssets(): Asset[] {
     const numAssets = Math.floor(Math.random() * 3) + 1; // 1 to 3 assets
     const assets: Asset[] = [];
@@ -46,7 +61,10 @@ function generateAssets(): Asset[] {
     return assets;
 }
 
-// Function to generate default condition meters
+/**
+ * Generates default condition meters for a character
+ * @returns A CharacterCondition object with default values
+ */
 function generateCondition(): CharacterCondition {
     return {
         health: 5,
@@ -56,7 +74,10 @@ function generateCondition(): CharacterCondition {
     };
 }
 
-// Function to generate a random bond
+/**
+ * Generates a random bond
+ * @returns A Bond object with random name and zero progress
+ */
 function generateBond(): Bond {
     const bondNames = [
         "Village of Thornhallow",
@@ -72,7 +93,10 @@ function generateBond(): Bond {
     };
 }
 
-// Function to generate a random vow
+/**
+ * Generates a random vow
+ * @returns A Vow object with random description, rank, and zero progress
+ */
 function generateVow(): Vow {
     const vowDescriptions = [
         "Find the lost artifact of my ancestors",
@@ -89,7 +113,10 @@ function generateVow(): Vow {
     };
 }
 
-// Main function to generate a character
+/**
+ * Main function to generate a complete character
+ * @returns A fully populated Character object
+ */
 export function generateCharacter(): Character {
     // Generate 0-1 bonds
     const numBonds = Math.floor(Math.random() * 2);
