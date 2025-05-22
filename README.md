@@ -1,75 +1,66 @@
 # Ironsworn Character Generator
 
-A web application that generates random characters for the Ironsworn tabletop role-playing game, built with TypeScript and the CMS Design System.
+A simple character generator for the Ironsworn TTRPG.
 
 ## Features
 
-- Randomly generates character names
-- Assigns stats according to Ironsworn rules (Edge, Heart, Iron, Shadow, Wits)
-- Creates character backgrounds
-- Assigns character assets with abilities
-- Tracks character condition meters (Health, Spirit, Supply, Momentum)
-- Manages bonds with progress tracks
-- Tracks vows with rank and progress
-- Editable fields for customization
-- Checkbox-based progress tracking
+- Generate random characters with stats
+- Roll dice for skill checks
+- Track character conditions (Health, Spirit, Supply, Momentum)
+- Manage character bonds and vows
+- Add and track character assets
 
-## Getting Started
+## Development
 
-### Prerequisites
+To run the project locally:
 
-- Node.js and npm installed on your machine
-
-### Installation
-
-1. Clone this repository or download the files
-2. Navigate to the project directory
-3. Install dependencies:
-
-```
+1. Install dependencies:
+```bash
 npm install
 ```
 
-### Running the Application
-
-To start the development server:
-
-```
+2. Start development server:
+```bash
 npm start
 ```
 
-This will start the application at `http://localhost:1234`
+## Building for Production
 
-### Building for Production
+To build the project for production:
 
-To build the application for production:
-
-```
+```bash
 npm run build
 ```
 
-## Project Structure
+This will create a `dist` directory with the compiled files.
 
-- `index.html` - Main HTML file using CMS Design System components
-- `src/app.ts` - Main application logic and UI interactions
-- `src/generator.ts` - Character generation logic
-- `src/types.ts` - TypeScript interfaces and data definitions
-- `src/styles.css` - Custom styling that complements CMS Design System
+## Deploying to GitHub Pages
 
-## Technologies Used
+1. Push your code to a GitHub repository
 
-- TypeScript for type-safe JavaScript
-- Parcel for bundling and development server
-- [CMS Design System](https://design.cms.gov/) for UI components and styling
-- Custom checkbox-based progress tracking system
+2. Go to your repository's Settings tab
 
-## Usage
+3. Scroll down to the "GitHub Pages" section
 
-1. Click "Generate Character" to create a random Ironsworn character
-2. Edit any fields as needed to customize your character
-3. Use "Manage Assets" to select character abilities
-4. Add bonds and vows to track relationships and goals
-5. Use the checkbox tracks to monitor character progress
+4. For the "Source" option, select:
+   - Branch: `main` (or your default branch)
+   - Folder: `/docs`
+
+5. Before deploying, build the project and copy the contents of the `dist` directory to a `docs` directory:
+   ```bash
+   npm run build
+   rm -rf docs
+   cp -r dist docs
+   ```
+
+6. Commit and push the `docs` directory:
+   ```bash
+   git add docs
+   git commit -m "Deploy to GitHub Pages"
+   git push
+   ```
+
+7. Your site will be available at: `https://[your-username].github.io/[repository-name]/`
 
 ## License
 
