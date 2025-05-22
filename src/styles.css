@@ -485,6 +485,11 @@ body.ds-base {
     justify-content: flex-start;
     margin: 10px 0;
 }
+.asset-selection {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
 
 .available-assets, .selected-assets {
     border: 2px solid var(--color-border);
