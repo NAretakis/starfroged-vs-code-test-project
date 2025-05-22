@@ -3,12 +3,16 @@
  * Main application file that handles UI interactions and character management
  * Uses CMS Design System for UI components and styling
  */
+// Import CMS Design System CSS first
 import '@cmsgov/design-system/dist/css/index.css';
+
+// Import local styles
+import './styles.css';
+import './dice-styles.css';
+
 import { generateCharacter } from './generator';
 import { Character, assetOptions, Asset, Bond, Vow, vowRanks } from './types';
 import DiceRoller from './diceRoller';
-import './dice-styles.css';
-import './styles.css';
 
 // DOM elements
 const generateBtn = document.getElementById('generate-btn') as HTMLButtonElement;
