@@ -6,6 +6,7 @@
 import { generateCharacter } from './generator';
 import { Character, assetOptions, Asset, Bond, Vow, vowRanks } from './types';
 import DiceRoller from './diceRoller';
+import './dice-styles.css';
 
 // DOM elements
 const generateBtn = document.getElementById('generate-btn') as HTMLButtonElement;
@@ -268,7 +269,7 @@ rollDiceBtn.addEventListener('click', async () => {
     }
     const results = await diceRoller?.rollDice();
     if (results) {
-        diceResultsEl.textContent = `Results: ${results.join(', ')}`;
+        diceResultsEl.textContent = `Results: d6: ${results[0]}, d10: ${results[1]}, d10: ${results[2]}`;
     }
 });
 
