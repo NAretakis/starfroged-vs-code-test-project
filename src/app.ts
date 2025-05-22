@@ -5,6 +5,7 @@
  */
 import { generateCharacter } from './generator';
 import { Character, assetOptions, Asset, Bond, Vow, vowRanks } from './types';
+import DiceRoller from './diceRoller';
 
 // DOM elements
 const generateBtn = document.getElementById('generate-btn') as HTMLButtonElement;
@@ -17,6 +18,9 @@ const witsEl = document.getElementById('wits') as HTMLInputElement;
 const backgroundEl = document.getElementById('background') as HTMLTextAreaElement;
 const assetsListEl = document.getElementById('assets-list') as HTMLUListElement;
 const manageAssetsBtn = document.getElementById('manage-assets-btn') as HTMLButtonElement;
+const rollDiceBtn = document.getElementById('roll-dice-btn') as HTMLButtonElement;
+const diceContainerEl = document.getElementById('dice-container') as HTMLDivElement;
+const diceResultsEl = document.getElementById('dice-results') as HTMLDivElement;
 
 // Condition elements
 const healthTrackEl = document.getElementById('health') as HTMLDivElement;
@@ -52,101 +56,299 @@ const vowRankEl = document.getElementById('vow-rank') as HTMLSelectElement;
 const vowProgressEl = document.getElementById('vow-progress') as HTMLDivElement;
 const saveVowBtn = document.getElementById('save-vow-btn') as HTMLButtonElement;
 
-// Current character data
-let currentAssets: Asset[] = [];
-let currentBonds: Bond[] = [];
-let currentVows: Vow[] = [];
-let editingBondIndex: number | null = null;
-let editingVowIndex: number | null = null;
+// Current character state
+let currentCharacter: Character | null = null;
+let diceRoller: DiceRoller | null = null;
 
-/**
- * Initialize checkbox tracks for all condition meters and progress tracks
- */
-function initializeCheckboxTracks() {
-    // Create health track (0-5)
-    createCheckboxTrack(healthTrackEl, 5, 'health');
-    
-    // Create spirit track (0-5)
-    createCheckboxTrack(spiritTrackEl, 5, 'spirit');
-    
-    // Create supply track (0-5)
-    createCheckboxTrack(supplyTrackEl, 5, 'supply');
-    
-    // Create momentum track (-6 to +10)
-    createMomentumTrack(momentumTrackEl);
-    
-    // Create bond progress track (0-10)
-    createCheckboxTrack(bondProgressEl, 10, 'bond-progress');
-    
-    // Create vow progress track (0-10)
-    createCheckboxTrack(vowProgressEl, 10, 'vow-progress');
+// Initialize dice roller
+function initDiceRoller() {
+    if (diceRoller) {
+        diceRoller.dispose();
+    }
+    diceRoller = new DiceRoller(diceContainerEl);
 }
 
-/**
- * Creates a checkbox track for condition meters and progress tracks
- * @param container - The HTML element to contain the track
- * @param count - Number of checkboxes to create
- * @param name - Name identifier for the track
- */
-function createCheckboxTrack(container: HTMLElement, count: number, name: string) {
+// Create condition track
+function createConditionTrack(container: HTMLElement, value: number, max: number = 5) {
     container.innerHTML = '';
-    
-    // Add value display
-    const valueDisplay = document.createElement('div');
-    valueDisplay.className = 'meter-value-display';
-    valueDisplay.id = `${name}-value`;
-    valueDisplay.textContent = '0';
-    
-    const trackContainer = document.createElement('div');
-    trackContainer.className = 'checkbox-track';
-    
-    for (let i = 0; i < count; i++) {
-        const checkboxContainer = document.createElement('div');
-        checkboxContainer.className = 'checkbox-track-container';
-        
-        const label = document.createElement('label');
-        label.className = 'checkbox-container';
-        
+    for (let i = 0; i < max; i++) {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.name = name;
-        checkbox.value = (i + 1).toString();
-        checkbox.dataset.index = i.toString();
-        
-        // Add event listener to handle clicking on checkboxes
-        checkboxContainer.addEventListener('click', (e) => {
-            // Prevent default to avoid double-triggering
-            e.preventDefault();
-            
-            // Get the current state and toggle it
-            const isChecked = checkbox.checked;
-            
-            // If unchecking, update to the previous value
-            if (isChecked) {
-                updateCheckboxTrack(trackContainer, i - 1);
-                valueDisplay.textContent = i.toString();
-            } 
-            // If checking, update to this value
-            else {
-                updateCheckboxTrack(trackContainer, i);
-                valueDisplay.textContent = (i + 1).toString();
+        checkbox.checked = i < value;
+        checkbox.addEventListener('change', () => {
+            if (currentCharacter) {
+                const trackName = container.id as keyof typeof currentCharacter.condition;
+                currentCharacter.condition[trackName] = container.querySelectorAll('input:checked').length;
             }
         });
-        
-        const checkmark = document.createElement('span');
-        checkmark.className = 'checkmark';
-        
-        const valueLabel = document.createElement('div');
-        valueLabel.className = 'checkbox-value';
-        valueLabel.textContent = (i + 1).toString();
-        
-        label.appendChild(checkbox);
-        label.appendChild(checkmark);
-        checkboxContainer.appendChild(label);
-        checkboxContainer.appendChild(valueLabel);
-        trackContainer.appendChild(checkboxContainer);
+        container.appendChild(checkbox);
     }
-    
-    container.appendChild(trackContainer);
-    container.appendChild(valueDisplay);
 }
+
+// Create progress track
+function createProgressTrack(container: HTMLElement, value: number = 0) {
+    container.innerHTML = '';
+    for (let i = 0; i < 10; i++) {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = i < value;
+        container.appendChild(checkbox);
+    }
+}
+
+// Update character display
+function updateCharacterDisplay(character: Character) {
+    characterNameEl.value = character.name;
+    edgeEl.value = character.stats.edge.toString();
+    heartEl.value = character.stats.heart.toString();
+    ironEl.value = character.stats.iron.toString();
+    shadowEl.value = character.stats.shadow.toString();
+    witsEl.value = character.stats.wits.toString();
+    backgroundEl.value = character.background;
+
+    // Update condition tracks
+    createConditionTrack(healthTrackEl, character.condition.health);
+    createConditionTrack(spiritTrackEl, character.condition.spirit);
+    createConditionTrack(supplyTrackEl, character.condition.supply);
+    createConditionTrack(momentumTrackEl, character.condition.momentum, 10);
+
+    // Update assets
+    updateAssetsList(character.assets);
+
+    // Update bonds
+    updateBondsList(character.bonds);
+
+    // Update vows
+    updateVowsList(character.vows);
+}
+
+// Update assets list
+function updateAssetsList(assets: Asset[]) {
+    assetsListEl.innerHTML = '';
+    assets.forEach(asset => {
+        const li = document.createElement('li');
+        li.className = 'asset-card';
+        li.innerHTML = `
+            <div class="asset-header">${asset.name}</div>
+            <div class="asset-description">${asset.description}</div>
+            <div class="asset-abilities">
+                ${asset.abilities.map((ability, index) => `
+                    <div class="ability-container">
+                        <input type="checkbox" id="${asset.name}-ability-${index}" 
+                            ${asset.checked[index] ? 'checked' : ''}>
+                        <label for="${asset.name}-ability-${index}">${ability}</label>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        assetsListEl.appendChild(li);
+    });
+}
+
+// Update bonds list
+function updateBondsList(bonds: Bond[]) {
+    bondsContainerEl.innerHTML = '';
+    bonds.forEach(bond => {
+        const bondElement = document.createElement('div');
+        bondElement.className = 'bond-item ds-u-padding--2';
+        bondElement.innerHTML = `
+            <h4 class="ds-h4">${bond.name}</h4>
+            <div class="progress-track">
+                ${createProgressTrackHTML(bond.progress)}
+            </div>
+        `;
+        bondsContainerEl.appendChild(bondElement);
+    });
+}
+
+// Update vows list
+function updateVowsList(vows: Vow[]) {
+    vowsContainerEl.innerHTML = '';
+    vows.forEach(vow => {
+        const vowElement = document.createElement('div');
+        vowElement.className = 'vow-item ds-u-padding--2';
+        vowElement.innerHTML = `
+            <h4 class="ds-h4">${vow.description}</h4>
+            <p>Rank: ${vow.rank}</p>
+            <div class="progress-track">
+                ${createProgressTrackHTML(vow.progress)}
+            </div>
+        `;
+        vowsContainerEl.appendChild(vowElement);
+    });
+}
+
+// Helper function to create progress track HTML
+function createProgressTrackHTML(value: number): string {
+    return Array(10).fill(0).map((_, i) => 
+        `<input type="checkbox" ${i < value ? 'checked' : ''}>`)
+        .join('');
+}
+
+// Modal management
+function openModal(modal: HTMLElement) {
+    modal.style.display = 'block';
+}
+
+function closeModal(modal: HTMLElement) {
+    modal.style.display = 'none';
+}
+
+// Asset modal management
+function populateAssetModal() {
+    if (!currentCharacter) return;
+
+    availableAssetsList.innerHTML = '';
+    selectedAssetsList.innerHTML = '';
+
+    const selectedAssetNames = new Set(currentCharacter.assets.map(a => a.name));
+
+    assetOptions.forEach(asset => {
+        const li = document.createElement('li');
+        li.className = 'asset-card selectable';
+        li.innerHTML = `
+            <div class="asset-header">${asset.name}</div>
+            <div class="asset-description">${asset.description}</div>
+            <div class="asset-abilities">
+                ${asset.abilities.map(ability => `
+                    <div class="ability-container">
+                        <label>${ability}</label>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        if (selectedAssetNames.has(asset.name)) {
+            li.classList.add('selected');
+            const selectedLi = li.cloneNode(true) as HTMLElement;
+            selectedLi.addEventListener('click', () => {
+                selectedAssetNames.delete(asset.name);
+                selectedLi.remove();
+                li.classList.remove('selected');
+            });
+            selectedAssetsList.appendChild(selectedLi);
+        } else {
+            li.addEventListener('click', () => {
+                if (selectedAssetNames.has(asset.name)) {
+                    selectedAssetNames.delete(asset.name);
+                    li.classList.remove('selected');
+                    // Remove from selected list
+                    const selectedItem = Array.from(selectedAssetsList.children)
+                        .find(el => el.querySelector('.asset-header')?.textContent === asset.name);
+                    if (selectedItem) {
+                        selectedItem.remove();
+                    }
+                } else {
+                    selectedAssetNames.add(asset.name);
+                    li.classList.add('selected');
+                    // Add to selected list
+                    const selectedLi = li.cloneNode(true) as HTMLElement;
+                    selectedLi.addEventListener('click', () => {
+                        selectedAssetNames.delete(asset.name);
+                        selectedLi.remove();
+                        li.classList.remove('selected');
+                    });
+                    selectedAssetsList.appendChild(selectedLi);
+                }
+            });
+            availableAssetsList.appendChild(li);
+        }
+    });
+}
+
+// Event Listeners
+generateBtn.addEventListener('click', () => {
+    currentCharacter = generateCharacter();
+    updateCharacterDisplay(currentCharacter);
+});
+
+rollDiceBtn.addEventListener('click', async () => {
+    if (!diceRoller) {
+        initDiceRoller();
+    }
+    const results = await diceRoller?.rollDice();
+    if (results) {
+        diceResultsEl.textContent = `Results: ${results.join(', ')}`;
+    }
+});
+
+manageAssetsBtn.addEventListener('click', () => {
+    populateAssetModal();
+    openModal(assetModal);
+});
+
+closeAssetModal.addEventListener('click', () => closeModal(assetModal));
+
+saveAssetsBtn.addEventListener('click', () => {
+    if (!currentCharacter) return;
+    
+    const selectedAssets = Array.from(selectedAssetsList.children).map(li => {
+        const assetName = li.querySelector('.asset-header')?.textContent || '';
+        const asset = assetOptions.find(a => a.name === assetName);
+        if (asset) {
+            // Create a new asset object with default checked states
+            return {
+                ...asset,
+                checked: new Array(asset.abilities.length).fill(false)
+            };
+        }
+        return null;
+    }).filter((asset): asset is Asset => asset !== null);
+
+    currentCharacter.assets = selectedAssets;
+    updateAssetsList(selectedAssets);
+    closeModal(assetModal);
+});
+
+addBondBtn.addEventListener('click', () => {
+    createProgressTrack(bondProgressEl);
+    openModal(bondModal);
+});
+
+closeBondModal.addEventListener('click', () => closeModal(bondModal));
+
+saveBondBtn.addEventListener('click', () => {
+    if (!currentCharacter) return;
+
+    const newBond: Bond = {
+        name: bondNameEl.value,
+        progress: Array.from(bondProgressEl.querySelectorAll('input:checked')).length
+    };
+
+    currentCharacter.bonds.push(newBond);
+    updateBondsList(currentCharacter.bonds);
+    closeModal(bondModal);
+    bondNameEl.value = '';
+});
+
+addVowBtn.addEventListener('click', () => {
+    createProgressTrack(vowProgressEl);
+    openModal(vowModal);
+});
+
+closeVowModal.addEventListener('click', () => closeModal(vowModal));
+
+saveVowBtn.addEventListener('click', () => {
+    if (!currentCharacter) return;
+
+    const newVow: Vow = {
+        description: vowDescriptionEl.value,
+        rank: vowRankEl.value,
+        progress: Array.from(vowProgressEl.querySelectorAll('input:checked')).length
+    };
+
+    currentCharacter.vows.push(newVow);
+    updateVowsList(currentCharacter.vows);
+    closeModal(vowModal);
+    vowDescriptionEl.value = '';
+});
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', () => {
+    initDiceRoller();
+    // Create empty condition tracks
+    createConditionTrack(healthTrackEl, 5);
+    createConditionTrack(spiritTrackEl, 5);
+    createConditionTrack(supplyTrackEl, 5);
+    createConditionTrack(momentumTrackEl, 2, 10);
+});

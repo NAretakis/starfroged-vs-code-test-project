@@ -4,226 +4,198 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ironsworn Character Generator</title>
-    <link rel="stylesheet" href="https://design.cms.gov/css/public.css">
+    <link rel="stylesheet" href="node_modules/@cmsgov/design-system/dist/css/index.css">
     <link rel="stylesheet" href="src/styles.css">
 </head>
 <body class="ds-base">
-    <header class="ds-base--inverse ds-u-padding--3">
-        <div class="ds-l-container">
-            <h1 class="ds-h1">Ironsworn Character Generator</h1>
+    <div class="ds-l-container">
+        <h1 class="ds-h1">Ironsworn Character Generator</h1>
+        
+        <div class="controls ds-u-text-align--center ds-u-margin-bottom--3">
+            <button id="generate-btn" class="ds-c-button ds-c-button--big ds-c-button--primary">Generate New Character</button>
         </div>
-    </header>
-
-    <main class="ds-l-container ds-u-padding-top--3">
-        <div class="ds-c-card ds-u-margin-bottom--3">
-            <div class="ds-c-card__header">
-                <h2 class="ds-h2">Character Sheet</h2>
+        
+        <div class="character-sheet ds-u-padding--3 ds-u-margin-bottom--3">
+            <div class="character-header ds-u-padding-bottom--2 ds-u-margin-bottom--2">
+                <div class="name-section">
+                    <div>
+                        <h2 class="ds-h2">Name:</h2>
+                        <div class="name-dice-container">
+                            <input type="text" id="character-name" class="ds-c-field" placeholder="Character Name">
+                            <button id="roll-dice-btn" class="ds-c-button ds-c-button--primary">Roll Dice</button>
+                        </div>
+                        <div id="dice-container" class="dice-container"></div>
+                        <div id="dice-results" class="dice-results"></div>
+                    </div>
+                    <div>
+                        <h2 class="ds-h2">Background</h2>
+                        <textarea id="background" class="ds-c-field" rows="4" placeholder="Character background..."></textarea>
+                    </div>
+                </div>
             </div>
-            <div class="ds-c-card__body">
-                <div class="ds-u-margin-bottom--3">
-                    <label class="ds-c-label" for="character-name">
-                        Character Name
-                    </label>
-                    <input class="ds-c-field" id="character-name" type="text" placeholder="Enter character name">
-                </div>
-                
-                <div class="ds-u-margin-bottom--3">
-                    <h3 class="ds-h3">Stats</h3>
-                    <div class="ds-l-row ds-u-margin-top--2">
-                        <div class="ds-l-col--2 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <label class="ds-c-label" for="edge">Edge</label>
-                            <input class="ds-c-field" id="edge" type="number" value="0">
-                        </div>
-                        <div class="ds-l-col--2 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <label class="ds-c-label" for="heart">Heart</label>
-                            <input class="ds-c-field" id="heart" type="number" value="0">
-                        </div>
-                        <div class="ds-l-col--2 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <label class="ds-c-label" for="iron">Iron</label>
-                            <input class="ds-c-field" id="iron" type="number" value="0">
-                        </div>
-                        <div class="ds-l-col--2 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <label class="ds-c-label" for="shadow">Shadow</label>
-                            <input class="ds-c-field" id="shadow" type="number" value="0">
-                        </div>
-                        <div class="ds-l-col--2 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <label class="ds-c-label" for="wits">Wits</label>
-                            <input class="ds-c-field" id="wits" type="number" value="0">
-                        </div>
+            
+            <div class="stats-section ds-u-margin-bottom--3">
+                <h3 class="ds-h3">Stats</h3>
+                <div class="stats-grid">
+                    <div class="stat-box ds-u-padding--2">
+                        <div class="stat-label">Edge</div>
+                        <input type="number" id="edge" class="ds-c-field stat-value" value="0">
+                    </div>
+                    <div class="stat-box ds-u-padding--2">
+                        <div class="stat-label">Heart</div>
+                        <input type="number" id="heart" class="ds-c-field stat-value" value="0">
+                    </div>
+                    <div class="stat-box ds-u-padding--2">
+                        <div class="stat-label">Iron</div>
+                        <input type="number" id="iron" class="ds-c-field stat-value" value="0">
+                    </div>
+                    <div class="stat-box ds-u-padding--2">
+                        <div class="stat-label">Shadow</div>
+                        <input type="number" id="shadow" class="ds-c-field stat-value" value="0">
+                    </div>
+                    <div class="stat-box ds-u-padding--2">
+                        <div class="stat-label">Wits</div>
+                        <input type="number" id="wits" class="ds-c-field stat-value" value="0">
                     </div>
                 </div>
-                
-                <div class="ds-u-margin-bottom--3">
-                    <h3 class="ds-h3">Condition</h3>
-                    <div class="ds-l-row ds-u-margin-top--2">
-                        <div class="ds-l-col--3 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <fieldset class="ds-c-fieldset">
-                                <legend class="ds-c-label">Health</legend>
-                                <div id="health" class="checkbox-track"></div>
-                                <div class="meter-value-display" id="health-value">0</div>
-                            </fieldset>
-                        </div>
-                        <div class="ds-l-col--3 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <fieldset class="ds-c-fieldset">
-                                <legend class="ds-c-label">Spirit</legend>
-                                <div id="spirit" class="checkbox-track"></div>
-                                <div class="meter-value-display" id="spirit-value">0</div>
-                            </fieldset>
-                        </div>
-                        <div class="ds-l-col--3 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <fieldset class="ds-c-fieldset">
-                                <legend class="ds-c-label">Supply</legend>
-                                <div id="supply" class="checkbox-track"></div>
-                                <div class="meter-value-display" id="supply-value">0</div>
-                            </fieldset>
-                        </div>
-                        <div class="ds-l-col--3 ds-l-col--6-sm ds-u-margin-bottom--2">
-                            <fieldset class="ds-c-fieldset">
-                                <legend class="ds-c-label">Momentum</legend>
-                                <div id="momentum" class="checkbox-track momentum-track"></div>
-                                <div class="meter-value-display" id="momentum-value">0</div>
-                            </fieldset>
+            </div>
+            
+            <div class="condition-section ds-u-margin-bottom--3">
+
+                <div class="condition-grid">
+                    <div class="condition-left">
+                        <div class="condition-meter ds-u-padding--2">
+                            <div class="momentum-container">
+                                <div class="condition-label vertical-text">Momentum</div>
+                                <div id="momentum" class="checkbox-track momentum-track">
+                                    <!-- Checkboxes will be added by JavaScript -->
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="ds-l-row ds-u-margin-bottom--3">
-                    <div class="ds-l-col--6 ds-l-col--12-sm ds-u-margin-bottom--2">
-                        <label class="ds-c-label" for="background">Background</label>
-                        <textarea class="ds-c-field" id="background" rows="4" placeholder="Character background..."></textarea>
-                    </div>
-                    <div class="ds-l-col--6 ds-l-col--12-sm ds-u-margin-bottom--2">
-                        <div class="ds-u-display--flex ds-u-justify-content--between ds-u-align-items--center">
-                            <h3 class="ds-h3 ds-u-margin-bottom--0">Assets</h3>
+                    
+                    <div class="condition-center">
+                        <div class="bonds-section ds-u-padding--2">
+                            <h3 class="ds-h3">Bonds</h3>
+                            <div id="bonds-container">
+                                <!-- Bonds will be populated here -->
+                            </div>
+                            <button id="add-bond-btn" class="ds-c-button ds-c-button--primary">Add Bond</button>
+                        </div>
+                        
+                        <div class="vows-section ds-u-padding--2">
+                            <h3 class="ds-h3">Vows</h3>
+                            <div id="vows-container">
+                                <!-- Vows will be populated here -->
+                            </div>
+                            <button id="add-vow-btn" class="ds-c-button ds-c-button--primary">Add Vow</button>
+                        </div>
+                        
+                        <div class="assets-section ds-u-padding--2">
+                            <h3 class="ds-h3">Assets</h3>
+                            <ul id="assets-list" class="ds-c-list--bare">
+                                <!-- Assets will be populated here -->
+                            </ul>
                             <button id="manage-assets-btn" class="ds-c-button ds-c-button--primary">Manage Assets</button>
                         </div>
-                        <ul id="assets-list" class="ds-c-list ds-u-margin-top--2">
-                            <!-- Assets will be populated here -->
-                        </ul>
                     </div>
-                </div>
-                
-                <div class="ds-l-row ds-u-margin-bottom--3">
-                    <div class="ds-l-col--6 ds-l-col--12-sm ds-u-margin-bottom--2">
-                        <div class="ds-c-card">
-                            <div class="ds-c-card__header">
-                                <div class="ds-u-display--flex ds-u-justify-content--between ds-u-align-items--center">
-                                    <h3 class="ds-h3 ds-u-margin-bottom--0">Bonds</h3>
-                                    <button id="add-bond-btn" class="ds-c-button ds-c-button--primary">Add Bond</button>
-                                </div>
-                            </div>
-                            <div class="ds-c-card__body">
-                                <div id="bonds-container">
-                                    <!-- Bonds will be populated here -->
+                    
+                    <div class="condition-right">
+                        <div class="condition-meter ds-u-padding--2">
+                            <div class="health-container">
+                                <div class="condition-label vertical-text">Health</div>
+                                <div id="health" class="checkbox-track">
+                                    <!-- Checkboxes will be added by JavaScript -->
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="ds-l-col--6 ds-l-col--12-sm ds-u-margin-bottom--2">
-                        <div class="ds-c-card">
-                            <div class="ds-c-card__header">
-                                <div class="ds-u-display--flex ds-u-justify-content--between ds-u-align-items--center">
-                                    <h3 class="ds-h3 ds-u-margin-bottom--0">Vows</h3>
-                                    <button id="add-vow-btn" class="ds-c-button ds-c-button--primary">Add Vow</button>
+                        <div class="condition-meter ds-u-padding--2">
+                            <div class="spirit-container">
+                                <div class="condition-label vertical-text">Spirit</div>
+                                <div id="spirit" class="checkbox-track">
+                                    <!-- Checkboxes will be added by JavaScript -->
                                 </div>
                             </div>
-                            <div class="ds-c-card__body">
-                                <div id="vows-container">
-                                    <!-- Vows will be populated here -->
+                        </div>
+                        <div class="condition-meter ds-u-padding--2">
+                            <div class="supply-container">
+                                <div class="condition-label vertical-text">Supply</div>
+                                <div id="supply" class="checkbox-track">
+                                    <!-- Checkboxes will be added by JavaScript -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="ds-c-card__footer ds-u-text-align--center">
-                <button id="generate-btn" class="ds-c-button ds-c-button--primary ds-c-button--big">Generate Character</button>
             </div>
         </div>
-    </main>
+        
+    </div>
     
     <!-- Asset Selection Modal -->
     <div id="asset-modal" class="modal">
-        <div class="modal-content ds-c-dialog">
-            <div class="ds-c-dialog__header">
-                <h2 class="ds-h2">Select Assets</h2>
-                <button class="ds-c-dialog__close close-modal" aria-label="Close modal dialog">&times;</button>
-            </div>
-            <div class="ds-c-dialog__body">
-                <div class="ds-l-row">
-                    <div class="ds-l-col--6 ds-l-col--12-sm">
-                        <h3 class="ds-h3">Available Assets</h3>
-                        <ul id="available-assets-list" class="ds-c-list"></ul>
-                    </div>
-                    <div class="ds-l-col--6 ds-l-col--12-sm">
-                        <h3 class="ds-h3">Selected Assets</h3>
-                        <ul id="selected-assets-list" class="ds-c-list"></ul>
-                    </div>
+        <div class="modal-content ds-u-padding--3">
+            <span class="close-modal">&times;</span>
+            <h2 class="ds-h2">Select Assets</h2>
+            <div class="asset-selection">
+                <div class="available-assets ds-u-padding--2">
+                    <h3 class="ds-h3">Available Assets</h3>
+                    <ul id="available-assets-list" class="ds-c-list--bare"></ul>
+                </div>
+                <div class="selected-assets ds-u-padding--2">
+                    <h3 class="ds-h3">Selected Assets</h3>
+                    <ul id="selected-assets-list" class="ds-c-list--bare"></ul>
                 </div>
             </div>
-            <div class="ds-c-dialog__actions">
-                <button id="save-assets-btn" class="ds-c-button ds-c-button--primary">Save Selection</button>
-            </div>
+            <button id="save-assets-btn" class="ds-c-button ds-c-button--success">Save Selection</button>
         </div>
     </div>
     
     <!-- Bond Modal -->
     <div id="bond-modal" class="modal">
-        <div class="modal-content ds-c-dialog">
-            <div class="ds-c-dialog__header">
-                <h2 class="ds-h2">Add Bond</h2>
-                <button class="ds-c-dialog__close close-modal" aria-label="Close modal dialog">&times;</button>
+        <div class="modal-content ds-u-padding--3">
+            <span class="close-modal">&times;</span>
+            <h2 class="ds-h2">Add Bond</h2>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="bond-name">Bond Name:</label>
+                <input type="text" id="bond-name" class="ds-c-field">
             </div>
-            <div class="ds-c-dialog__body">
-                <div class="ds-u-margin-bottom--2">
-                    <label class="ds-c-label" for="bond-name">Bond Name:</label>
-                    <input type="text" id="bond-name" class="ds-c-field">
-                </div>
-                <div class="ds-u-margin-bottom--2">
-                    <fieldset class="ds-c-fieldset">
-                        <legend class="ds-c-label">Progress:</legend>
-                        <div id="bond-progress" class="checkbox-track progress-track-edit"></div>
-                    </fieldset>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="bond-progress">Progress:</label>
+                <div id="bond-progress" class="checkbox-track progress-track-edit">
+                    <!-- Checkboxes will be added by JavaScript -->
                 </div>
             </div>
-            <div class="ds-c-dialog__actions">
-                <button id="save-bond-btn" class="ds-c-button ds-c-button--primary">Save Bond</button>
-            </div>
+            <button id="save-bond-btn" class="ds-c-button ds-c-button--success">Save Bond</button>
         </div>
     </div>
     
     <!-- Vow Modal -->
     <div id="vow-modal" class="modal">
-        <div class="modal-content ds-c-dialog">
-            <div class="ds-c-dialog__header">
-                <h2 class="ds-h2">Add Vow</h2>
-                <button class="ds-c-dialog__close close-modal" aria-label="Close modal dialog">&times;</button>
+        <div class="modal-content ds-u-padding--3">
+            <span class="close-modal">&times;</span>
+            <h2 class="ds-h2">Add Vow</h2>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="vow-description">Description:</label>
+                <textarea id="vow-description" class="ds-c-field" rows="2"></textarea>
             </div>
-            <div class="ds-c-dialog__body">
-                <div class="ds-u-margin-bottom--2">
-                    <label class="ds-c-label" for="vow-description">Description:</label>
-                    <textarea id="vow-description" class="ds-c-field" rows="2"></textarea>
-                </div>
-                <div class="ds-u-margin-bottom--2">
-                    <label class="ds-c-label" for="vow-rank">Rank:</label>
-                    <select id="vow-rank" class="ds-c-field">
-                        <option value="Troublesome">Troublesome</option>
-                        <option value="Dangerous">Dangerous</option>
-                        <option value="Formidable">Formidable</option>
-                        <option value="Extreme">Extreme</option>
-                        <option value="Epic">Epic</option>
-                    </select>
-                </div>
-                <div class="ds-u-margin-bottom--2">
-                    <fieldset class="ds-c-fieldset">
-                        <legend class="ds-c-label">Progress:</legend>
-                        <div id="vow-progress" class="checkbox-track progress-track-edit"></div>
-                    </fieldset>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="vow-rank">Rank:</label>
+                <select id="vow-rank" class="ds-c-field">
+                    <option value="Troublesome">Troublesome</option>
+                    <option value="Dangerous">Dangerous</option>
+                    <option value="Formidable">Formidable</option>
+                    <option value="Extreme">Extreme</option>
+                    <option value="Epic">Epic</option>
+                </select>
+            </div>
+            <div class="ds-u-margin-y--2">
+                <label class="ds-c-label" for="vow-progress">Progress:</label>
+                <div id="vow-progress" class="checkbox-track progress-track-edit">
+                    <!-- Checkboxes will be added by JavaScript -->
                 </div>
             </div>
-            <div class="ds-c-dialog__actions">
-                <button id="save-vow-btn" class="ds-c-button ds-c-button--primary">Save Vow</button>
-            </div>
+            <button id="save-vow-btn" class="ds-c-button ds-c-button--success">Save Vow</button>
         </div>
     </div>
     
